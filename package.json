@@ -1,0 +1,29 @@
+{
+  "name": "bold-app-6-network-board",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone BoLD test application with LinkedIn-style BOLA, IDOR, and BFLA flaws.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "next": "^16.2.9",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.2",
+    "@types/react": "^19.2.7",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "postcss": "^8.5.16"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}
