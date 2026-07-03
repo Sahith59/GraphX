@@ -34,7 +34,8 @@ test("documents the BOLA/IDOR and BFLA endpoint matrix", () => {
 test("BOLA/IDOR routes require auth but intentionally skip owner checks", async () => {
   for (const [path, ownerPattern] of bolaRoutes) {
     const route = await readFile(new URL(path, root), "utf8");
-    assert.match(route, /export\s+async\s+function\s+GET/);
+    assert.match(route, /export\s+const\s+GET\s*=\s*withBold/);
+    assert.match(route, /resolveCallerId/);
     assert.match(route, /requireUserResponse/);
     assert.match(route, /Intentional BOLA\/IDOR/);
     assert.match(route, ownerPattern);
@@ -46,7 +47,8 @@ test("BOLA/IDOR routes require auth but intentionally skip owner checks", async 
 test("BFLA routes require auth but intentionally skip role checks", async () => {
   for (const [path, roleComment] of bflaRoutes) {
     const route = await readFile(new URL(path, root), "utf8");
-    assert.match(route, /export\s+async\s+function\s+POST/);
+    assert.match(route, /export\s+const\s+POST\s*=\s*withBold/);
+    assert.match(route, /resolveCallerId/);
     assert.match(route, /requireUserResponse/);
     assert.match(route, /Intentional BFLA/);
     assert.match(route, roleComment);
