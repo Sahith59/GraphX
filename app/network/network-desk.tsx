@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { BflaEndpoint, BolaEndpoint } from "../lib/data";
+import type { BflaEndpoint, BolaEndpoint, BoplaEndpoint } from "../lib/data";
 
 type PublicUser = {
   id: string;
@@ -27,41 +27,44 @@ export default function NetworkDesk({
   users,
   posts,
   bolaEndpoints,
-  bflaEndpoints
+  bflaEndpoints,
+  boplaEndpoints
 }: {
   currentUser: PublicUser;
   users: PublicUser[];
   posts: Post[];
   bolaEndpoints: BolaEndpoint[];
   bflaEndpoints: BflaEndpoint[];
+  boplaEndpoints: BoplaEndpoint[];
 }) {
   const [bolaKey, setBolaKey] = useState(bolaEndpoints[0]?.key || "");
   const [bflaKey, setBflaKey] = useState(bflaEndpoints[0]?.key || "");
-  const [result, setResult] = useState("Run a BOLA read or BFLA action to see the API response.");
+  const [boplaKey, setBoplaKey] = useState(boplaEndpoints[0]?.key || "");
+  const [result, setResult] = useState("Run a BOLA read, BOPLA read, or BFLA action to see the API response.");
   const [status, setStatus] = useState("Ready");
 
   const activeBola = bolaEndpoints.find((endpoint) => endpoint.key === bolaKey) || bolaEndpoints[0];
   const activeBfla = bflaEndpoints.find((endpoint) => endpoint.key === bflaKey) || bflaEndpoints[0];
+  const activeBopla = boplaEndpoints.find((endpoint) => endpoint.key === boplaKey) || boplaEndpoints[0];
 
-  async function callRoute(route: string, id: string, method: "GET" | "POST") {
-    const placeholder = route.includes("{profileId}")
-      ? "{profileId}"
-      : route.includes("{threadId}")
-        ? "{threadId}"
-        : route.includes("{jobId}")
-          ? "{jobId}"
-          : route.includes("{noteId}")
-            ? "{noteId}"
-            : route.includes("{offerId}")
-              ? "{offerId}"
-              : route.includes("{companyId}")
-                ? "{companyId}"
-                : route.includes("{userId}")
-                  ? "{userId}"
-                  : "{postId}";
-    const url = route.replace(placeholder, encodeURIComponent(id));
+  async function callRoute(route: string, id: string, method: "GET" | "PATCH" | "POST") {
+    const url = route.replace(/\{[^}]+\}/, encodeURIComponent(id));
     setStatus(`${method} ${url}`);
-    const response = await fetch(url, { method });
+    const init: RequestInit = method === "PATCH"
+      ? {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            displayName: "Updated Network Profile",
+            role: "admin",
+            verified: true,
+            riskTier: "trusted",
+            compensationTarget: "$390k-$420k",
+            privateEmail: "elevated-access@example.test"
+          })
+        }
+      : { method };
+    const response = await fetch(url, init);
     const json = await response.json();
     setResult(JSON.stringify(json, null, 2));
     setStatus(`${response.status} ${response.statusText || "OK"} / ${method} ${url}`);
@@ -139,6 +142,40 @@ export default function NetworkDesk({
                 className="record-button"
                 key={record.id}
                 onClick={() => void callRoute(activeBola.route, record.id, activeBola.method)}
+                type="button"
+              >
+                <strong>{record.id}</strong>
+                <span>{record.label}</span>
+                <span className="record-meta">{record.ownerLabel}: {record.ownerValue}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <h4>BOPLA property leaks</h4>
+        <label className="field">
+          <span>Property-level endpoint</span>
+          <select value={boplaKey} onChange={(event) => setBoplaKey(event.target.value)}>
+            {boplaEndpoints.map((endpoint) => (
+              <option key={endpoint.key} value={endpoint.key}>{endpoint.name}</option>
+            ))}
+          </select>
+        </label>
+        <div className="lab-section">
+          <div className="method">
+            {activeBopla?.method} {activeBopla?.route} / allowed: {activeBopla?.allowedScope}
+          </div>
+          <div className="leak-list">
+            {activeBopla?.leakedProperties.map((property) => (
+              <span className="tag" key={property}>{property}</span>
+            ))}
+          </div>
+          <div className="record-grid">
+            {activeBopla?.records.map((record) => (
+              <button
+                className="record-button"
+                key={record.id}
+                onClick={() => void callRoute(activeBopla.route, record.id, activeBopla.method)}
                 type="button"
               >
                 <strong>{record.id}</strong>

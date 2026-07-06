@@ -1,10 +1,16 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { findUserById, publicUser } from "./data";
 
 const COOKIE_NAME = "network_board_session";
 const SESSION_SECRET = process.env.SESSION_SECRET || "network-board-local-secret";
+const DEMO_BEARER_USERS: Record<string, string> = {
+  "graphx-admin-bfla-token": "usr_799",
+  "graphx-recruiter-bfla-token": "usr_702",
+  "graphx-company-admin-bfla-token": "usr_703",
+  "graphx-candidate-bfla-token": "usr_701"
+};
 
 function sign(value: string) {
   return crypto.createHmac("sha256", SESSION_SECRET).update(value).digest("hex");
@@ -23,9 +29,16 @@ function decodeSession(value?: string) {
   return userId;
 }
 
+async function userIdFromBearerToken() {
+  const headerStore = await headers();
+  const authorization = headerStore.get("authorization");
+  const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
+  return token ? DEMO_BEARER_USERS[token] ?? null : null;
+}
+
 export async function currentUser() {
   const cookieStore = await cookies();
-  const userId = decodeSession(cookieStore.get(COOKIE_NAME)?.value);
+  const userId = decodeSession(cookieStore.get(COOKIE_NAME)?.value) ?? (await userIdFromBearerToken());
   if (!userId) return null;
   const user = findUserById(userId);
   return user ? publicUser(user) : null;

@@ -1,7 +1,7 @@
 import AuthPanel from "./network/auth-panel";
 import NetworkDesk from "./network/network-desk";
 import SignOutButton from "./network/sign-out-button";
-import { bflaEndpoints, bolaEndpoints, posts, publicUser, users } from "./lib/data";
+import { bflaEndpoints, bolaEndpoints, boplaEndpoints, posts, publicUser, users } from "./lib/data";
 import { currentUser } from "./lib/session";
 
 export default async function Home() {
@@ -34,7 +34,7 @@ export default async function Home() {
           <h2>Professional graph, private doors, broken controls.</h2>
           <p className="lede">
             A working network clone for testing object-level and function-level authorization. Sign in as one member,
-            inspect another member's private data, then invoke privileged actions from an ordinary account.
+            inspect another member's private data, expose restricted properties, then invoke privileged actions from an ordinary account.
           </p>
           <div className="stats">
             <div className="stat">
@@ -44,6 +44,10 @@ export default async function Home() {
             <div className="stat">
               <strong>{bflaEndpoints.length}</strong>
               <span className="mono">BFLA actions</span>
+            </div>
+            <div className="stat">
+              <strong>{boplaEndpoints.length}</strong>
+              <span className="mono">BOPLA route</span>
             </div>
             <div className="stat">
               <strong>{users.length}</strong>
@@ -66,6 +70,7 @@ export default async function Home() {
             <p className="session-copy">{user.headline}</p>
             <div className="session-metrics">
               <span><strong>{bolaEndpoints.length}</strong> object reads</span>
+              <span><strong>{boplaEndpoints.length}</strong> property leak</span>
               <span><strong>{bflaEndpoints.length}</strong> privileged actions</span>
             </div>
           </div>
@@ -79,6 +84,7 @@ export default async function Home() {
           posts={posts}
           bolaEndpoints={bolaEndpoints}
           bflaEndpoints={bflaEndpoints}
+          boplaEndpoints={boplaEndpoints}
         />
       ) : null}
     </main>

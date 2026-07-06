@@ -184,7 +184,7 @@ code {
 .stats {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   margin-top: 28px;
 }
 
@@ -408,6 +408,12 @@ code {
   gap: 7px;
 }
 
+.leak-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
 .tag {
   background: rgba(33, 75, 135, 0.1);
   border: 1px solid rgba(33, 75, 135, 0.24);
@@ -452,7 +458,7 @@ code {
 .session-metrics {
   display: grid;
   gap: 8px;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   margin-top: 16px;
 }
 

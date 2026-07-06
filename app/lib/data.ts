@@ -19,7 +19,7 @@ export type LabRecord = {
 export type BolaEndpoint = {
   key: string;
   name: string;
-  method: "GET";
+  method: "GET" | "PATCH";
   route: string;
   ownerPath: string;
   records: LabRecord[];
@@ -28,9 +28,19 @@ export type BolaEndpoint = {
 export type BflaEndpoint = {
   key: string;
   name: string;
-  method: "POST";
+  method: "GET" | "POST";
   route: string;
   requiredRole: string;
+  records: LabRecord[];
+};
+
+export type BoplaEndpoint = {
+  key: string;
+  name: string;
+  method: "GET" | "PATCH";
+  route: string;
+  allowedScope: string;
+  leakedProperties: string[];
   records: LabRecord[];
 };
 
@@ -357,6 +367,19 @@ export const bolaEndpoints: BolaEndpoint[] = [
 
 export const bflaEndpoints: BflaEndpoint[] = [
   {
+    key: "admin-user-view",
+    name: "Admin User View",
+    method: "GET",
+    route: "/api/admin/users/{id}",
+    requiredRole: "admin",
+    records: users.filter((user) => user.id !== "usr_799").map((user) => ({
+      label: user.name,
+      id: user.id,
+      ownerLabel: "targetUserId",
+      ownerValue: user.id
+    }))
+  },
+  {
     key: "suspend-user",
     name: "Suspend User",
     method: "POST",
@@ -405,6 +428,48 @@ export const bflaEndpoints: BflaEndpoint[] = [
     route: "/api/recruiter-notes/{noteId}/share",
     requiredRole: "note author recruiter",
     records: recruiterNotes.map((note) => ({ label: note.title, id: note.noteId, ownerLabel: "authorId", ownerValue: note.authorId }))
+  }
+];
+
+export const boplaEndpoints: BoplaEndpoint[] = [
+  {
+    key: "profile-settings-write",
+    name: "Profile Settings Write",
+    method: "PATCH",
+    route: "/api/profiles/{profileId}",
+    allowedScope: "candidate can update normal profile display fields",
+    leakedProperties: [
+      "role",
+      "verified",
+      "riskTier",
+      "compensationTarget",
+      "privateEmail"
+    ],
+    records: profiles.map((profile) => ({
+      label: profile.displayName,
+      id: profile.profileId,
+      ownerLabel: "ownerId",
+      ownerValue: profile.ownerId
+    }))
+  },
+  {
+    key: "profile-review-packet",
+    name: "Profile Review Packet",
+    method: "GET",
+    route: "/api/profiles/{profileId}/review-packet",
+    allowedScope: "candidate can read their own profile summary",
+    leakedProperties: [
+      "identityVerification.ssnLast4",
+      "recruiterOnlyNotes",
+      "riskSignals.privateEmail",
+      "riskSignals.compensationBand"
+    ],
+    records: profiles.map((profile) => ({
+      label: profile.displayName,
+      id: profile.profileId,
+      ownerLabel: "ownerId",
+      ownerValue: profile.ownerId
+    }))
   }
 ];
 

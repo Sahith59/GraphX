@@ -23,10 +23,29 @@ const bflaRoutes = [
   ["app/api/recruiter-notes/[noteId]/share/route.ts", /should require note author recruiter/, /\/api\/recruiter-notes\/\[noteId\]\/share/]
 ];
 
+const bflaReadRoutes = [
+  ["app/api/admin/users/[id]/route.ts", /should require admin/, /\/api\/admin\/users\/\[id\]/]
+];
+
+const boplaRoutes = [
+  [
+    "app/api/profiles/[profileId]/route.ts",
+    /Intentional BOPLA/,
+    /\/api\/profiles\/\[profileId\]/
+  ],
+  [
+    "app/api/profiles/[profileId]/review-packet/route.ts",
+    /Intentional BOPLA/,
+    /\/api\/profiles\/\[profileId\]\/review-packet/
+  ]
+];
+
 test("documents the BOLA/IDOR and BFLA endpoint matrix", () => {
   assert.equal(bolaRoutes.length, 6);
   assert.equal(bflaRoutes.length, 5);
-  for (const [, , pattern] of [...bolaRoutes, ...bflaRoutes]) {
+  assert.equal(bflaReadRoutes.length, 1);
+  assert.equal(boplaRoutes.length, 2);
+  for (const [, , pattern] of [...bolaRoutes, ...bflaRoutes, ...bflaReadRoutes, ...boplaRoutes]) {
     assert.match(readme, pattern);
   }
 });
@@ -49,6 +68,47 @@ test("BFLA routes require auth but intentionally skip role checks", async () => 
     const route = await readFile(new URL(path, root), "utf8");
     assert.match(route, /export\s+const\s+POST\s*=\s*withBold/);
     assert.match(route, /resolveCallerId/);
+    assert.match(route, /resolveCallerPrivilege/);
+    assert.match(route, /requireUserResponse/);
+    assert.match(route, /Intentional BFLA/);
+    assert.match(route, roleComment);
+    assert.doesNotMatch(route, /auth\.user\.role\s*!==/);
+    assert.doesNotMatch(route, /auth\.user\.role\s*===/);
+  }
+});
+
+test("BOPLA routes require auth but intentionally leak sensitive properties", async () => {
+  for (const [path, leakComment] of boplaRoutes) {
+    const route = await readFile(new URL(path, root), "utf8");
+    assert.match(route, /withBold/);
+    assert.match(route, /resolveCallerId/);
+    assert.match(route, /requireUserResponse/);
+    assert.match(route, leakComment);
+  }
+  const writeRoute = await readFile(new URL("app/api/profiles/[profileId]/route.ts", root), "utf8");
+  assert.match(writeRoute, /export\s+const\s+PATCH\s*=\s*withBold/);
+  assert.match(writeRoute, /sensitiveFields/);
+  assert.match(writeRoute, /role/);
+  assert.match(writeRoute, /verified/);
+  assert.match(writeRoute, /riskTier/);
+  assert.match(writeRoute, /compensationTarget/);
+  assert.match(writeRoute, /privateEmail/);
+
+  const readRoute = await readFile(new URL("app/api/profiles/[profileId]/review-packet/route.ts", root), "utf8");
+  assert.match(readRoute, /identityVerification/);
+  assert.match(readRoute, /ssnLast4/);
+  assert.match(readRoute, /recruiterOnlyNotes/);
+  assert.match(readRoute, /riskSignals/);
+  assert.doesNotMatch(readRoute, /delete\s+.*ssnLast4/);
+});
+
+test("read-style BFLA route is privileged and intentionally skips role checks", async () => {
+  for (const [path, roleComment] of bflaReadRoutes) {
+    const route = await readFile(new URL(path, root), "utf8");
+    assert.match(route, /export\s+const\s+GET\s*=\s*withBold/);
+    assert.match(route, /resolveCallerId/);
+    assert.match(route, /privileged:\s*true/);
+    assert.match(route, /resolveCallerPrivilege/);
     assert.match(route, /requireUserResponse/);
     assert.match(route, /Intentional BFLA/);
     assert.match(route, roleComment);

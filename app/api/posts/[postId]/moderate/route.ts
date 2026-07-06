@@ -1,6 +1,6 @@
 import { withBold } from "@boldsec/next";
 import { NextResponse } from "next/server";
-import { resolveCallerId } from "../../../../lib/bold";
+import { resolveAdminPrivilege, resolveCallerId } from "../../../../lib/bold";
 import { findByKey, posts } from "../../../../lib/data";
 import { requireUserResponse } from "../../../../lib/session";
 
@@ -26,5 +26,5 @@ async function _bold_POST(_request: Request, { params }: RouteContext) {
 
 export const POST = withBold(
   _bold_POST,
-  { resolveCallerId }
+  { resolveCallerId, privileged: true, resolveCallerPrivilege: resolveAdminPrivilege }
 );
