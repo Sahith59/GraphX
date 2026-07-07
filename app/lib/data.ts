@@ -132,6 +132,29 @@ export const profiles = [
   }
 ];
 
+export type ProfileOverride = {
+  displayName?: string;
+  headline?: string;
+  role?: string;
+  verified?: boolean;
+  riskTier?: string;
+  compensationTarget?: string;
+  privateEmail?: string;
+};
+
+const profileOverrides = new Map<string, ProfileOverride>();
+
+export function updateProfileOverride(profileId: string, update: ProfileOverride) {
+  const existing = profileOverrides.get(profileId) ?? {};
+  const next = { ...existing, ...update };
+  profileOverrides.set(profileId, next);
+  return next;
+}
+
+export function getProfileOverride(profileId: string) {
+  return profileOverrides.get(profileId) ?? {};
+}
+
 export const messageThreads = [
   {
     threadId: "thread_ava_marcus",
