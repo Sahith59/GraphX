@@ -1,6 +1,6 @@
 import { withBold } from "@boldsec/next";
 import { NextResponse } from "next/server";
-import { resolveCallerId, resolveCallerScopes } from "../../../../../lib/bold";
+import { resolveCallerId, resolveCallerScopes, resolveCallerTenant, resolveTenantFromPath } from "../../../../../lib/bold";
 import { findByKey, tenantReports, tenants } from "../../../../../lib/data";
 import { requireUserResponse } from "../../../../../lib/session";
 
@@ -35,5 +35,11 @@ async function _bold_GET(_request: Request, { params }: RouteContext) {
 
 export const GET = withBold(
   _bold_GET,
-  { resolveCallerId, resolveCallerScopes }
+  {
+    resolveCallerId,
+    resolveCallerScopes,
+    resolveCallerTenant,
+    resolveObjectTenant: resolveTenantFromPath,
+    tenantField: "tenantId"
+  }
 );

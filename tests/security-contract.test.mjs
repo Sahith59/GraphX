@@ -92,6 +92,9 @@ test("tenant isolation routes provide caller scopes but intentionally skip scope
     assert.match(route, /export\s+const\s+GET\s*=\s*withBold/);
     assert.match(route, /resolveCallerId/);
     assert.match(route, /resolveCallerScopes/);
+    assert.match(route, /resolveCallerTenant/);
+    assert.match(route, /resolveObjectTenant/);
+    assert.match(route, /tenantField/);
     assert.match(route, /requireUserResponse/);
     assert.match(route, routeComment);
     assert.match(route, /tenantId/);

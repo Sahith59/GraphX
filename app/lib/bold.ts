@@ -11,6 +11,16 @@ export async function resolveCallerScopes() {
   return user?.tenantIds ?? null;
 }
 
+export async function resolveCallerTenant() {
+  const user = await currentUser();
+  return user?.tenantIds[0] ?? null;
+}
+
+export async function resolveTenantFromPath(request: Request) {
+  const match = new URL(request.url).pathname.match(/\/api\/tenants\/([^/]+)/);
+  return match?.[1] ?? null;
+}
+
 async function callerRole() {
   const user = await currentUser();
   return user?.role ?? null;
