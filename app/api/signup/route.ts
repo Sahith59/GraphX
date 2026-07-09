@@ -24,6 +24,7 @@ async function _bold_POST(request: Request) {
       role: "candidate" as const,
       headline: "New member building a professional graph",
       company: "Network Board",
+      tenantIds: [`tenant_${820 + users.length}`],
       initials: name
         .split(" ")
         .map((part) => part[0])

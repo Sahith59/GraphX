@@ -40,12 +40,21 @@ const boplaRoutes = [
   ]
 ];
 
+const tenantIsolationRoutes = [
+  [
+    "app/api/tenants/[tenantId]/reports/[reportId]/route.ts",
+    /Intentional tenant-isolation vulnerability/,
+    /\/api\/tenants\/\[tenantId\]\/reports\/\[reportId\]/
+  ]
+];
+
 test("documents the BOLA/IDOR and BFLA endpoint matrix", () => {
   assert.equal(bolaRoutes.length, 6);
   assert.equal(bflaRoutes.length, 5);
   assert.equal(bflaReadRoutes.length, 1);
   assert.equal(boplaRoutes.length, 2);
-  for (const [, , pattern] of [...bolaRoutes, ...bflaRoutes, ...bflaReadRoutes, ...boplaRoutes]) {
+  assert.equal(tenantIsolationRoutes.length, 1);
+  for (const [, , pattern] of [...bolaRoutes, ...bflaRoutes, ...bflaReadRoutes, ...boplaRoutes, ...tenantIsolationRoutes]) {
     assert.match(readme, pattern);
   }
 });
@@ -74,6 +83,19 @@ test("BFLA routes require auth but intentionally skip role checks", async () => 
     assert.match(route, roleComment);
     assert.doesNotMatch(route, /auth\.user\.role\s*!==/);
     assert.doesNotMatch(route, /auth\.user\.role\s*===/);
+  }
+});
+
+test("tenant isolation routes provide caller scopes but intentionally skip scope checks", async () => {
+  for (const [path, routeComment] of tenantIsolationRoutes) {
+    const route = await readFile(new URL(path, root), "utf8");
+    assert.match(route, /export\s+const\s+GET\s*=\s*withBold/);
+    assert.match(route, /resolveCallerId/);
+    assert.match(route, /resolveCallerScopes/);
+    assert.match(route, /requireUserResponse/);
+    assert.match(route, routeComment);
+    assert.match(route, /tenantId/);
+    assert.doesNotMatch(route, /auth\.user\.tenantIds\.includes/);
   }
 });
 
@@ -125,4 +147,6 @@ test("seed users cover candidate, recruiter, company admin, and admin roles", ()
   assert.match(data, /id:\s*"usr_701"/);
   assert.match(data, /id:\s*"usr_702"/);
   assert.match(data, /id:\s*"usr_703"/);
+  assert.match(data, /tenant_atlas_grid/);
+  assert.match(data, /tenant_northstar_search/);
 });

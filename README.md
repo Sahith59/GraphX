@@ -1,10 +1,10 @@
 # BoLD App 6 - Network Board
 
-Network Board is a standalone Next.js professional-network app for testing BoLD with LinkedIn-style BOLA, IDOR, BOPLA, and BFLA behavior.
+Network Board is a standalone Next.js professional-network app for testing BoLD with LinkedIn-style BOLA, IDOR, tenant isolation, BOPLA, and BFLA behavior.
 
 ## Scenario
 
-Users sign in to a professional network with profiles, posts, private message threads, recruiter notes, job applicant queues, offers, company analytics, privileged actions, and property-level review packets. The app intentionally authenticates users but skips object-owner, object-property, and function-level authorization checks on selected routes.
+Users sign in to a professional network with profiles, posts, private message threads, recruiter notes, job applicant queues, offers, company analytics, tenant-scoped reports, privileged actions, and property-level review packets. The app intentionally authenticates users but skips object-owner, tenant-scope, object-property, and function-level authorization checks on selected routes.
 
 ## Demo accounts
 
@@ -23,6 +23,10 @@ All accounts use password `demo1234`.
 - `GET /api/recruiter-notes/[noteId]` -> top-level `authorId`
 - `GET /api/offers/[offerId]` -> top-level `candidateId`
 - `GET /api/company-pages/[companyId]/analytics` -> top-level `companyAdminId`
+
+## Intentional tenant isolation routes
+
+- `GET /api/tenants/[tenantId]/reports/[reportId]` -> should require membership in the tenant from the URL, but any logged-in user can read another tenant's report
 
 ## Intentional BOPLA routes
 

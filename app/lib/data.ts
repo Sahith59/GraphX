@@ -6,6 +6,7 @@ export type User = {
   role: "candidate" | "recruiter" | "company_admin" | "admin";
   headline: string;
   company: string;
+  tenantIds: string[];
   initials: string;
 };
 
@@ -44,6 +45,22 @@ export type BoplaEndpoint = {
   records: LabRecord[];
 };
 
+export type TenantRecord = {
+  label: string;
+  tenantId: string;
+  objectId: string;
+  tenantLabel: string;
+};
+
+export type TenantIsolationEndpoint = {
+  key: string;
+  name: string;
+  method: "GET";
+  route: string;
+  scopePath: string;
+  records: TenantRecord[];
+};
+
 export const users: User[] = [
   {
     id: "usr_701",
@@ -53,6 +70,7 @@ export const users: User[] = [
     role: "candidate",
     headline: "Product lead exploring AI safety platforms",
     company: "Independent",
+    tenantIds: ["tenant_independent"],
     initials: "AS"
   },
   {
@@ -63,6 +81,7 @@ export const users: User[] = [
     role: "recruiter",
     headline: "Executive recruiter for infrastructure teams",
     company: "Northstar Search",
+    tenantIds: ["tenant_northstar_search"],
     initials: "MC"
   },
   {
@@ -73,6 +92,7 @@ export const users: User[] = [
     role: "company_admin",
     headline: "People operations lead at Atlas Grid",
     company: "Atlas Grid",
+    tenantIds: ["tenant_atlas_grid"],
     initials: "LO"
   },
   {
@@ -83,6 +103,7 @@ export const users: User[] = [
     role: "admin",
     headline: "Trust and safety administrator",
     company: "Network Board",
+    tenantIds: ["tenant_network_board"],
     initials: "RA"
   }
 ];
@@ -95,9 +116,63 @@ export function publicUser(user: User) {
     role: user.role,
     headline: user.headline,
     company: user.company,
+    tenantIds: user.tenantIds,
     initials: user.initials
   };
 }
+
+export const tenants = [
+  {
+    tenantId: "tenant_independent",
+    name: "Independent Network",
+    memberIds: ["usr_701"]
+  },
+  {
+    tenantId: "tenant_northstar_search",
+    name: "Northstar Search",
+    memberIds: ["usr_702"]
+  },
+  {
+    tenantId: "tenant_atlas_grid",
+    name: "Atlas Grid",
+    memberIds: ["usr_703"]
+  },
+  {
+    tenantId: "tenant_network_board",
+    name: "Network Board",
+    memberIds: ["usr_799"]
+  }
+];
+
+export const tenantReports = [
+  {
+    reportId: "tenant_report_ava_pipeline",
+    tenantId: "tenant_independent",
+    title: "Independent opportunity tracker",
+    ownerId: "usr_701",
+    confidentialSummary: "Ava is comparing three private product leadership searches.",
+    forecast: "$240k target package",
+    riskNotes: ["Current employer unaware", "Reference calls gated until offer stage"]
+  },
+  {
+    reportId: "tenant_report_northstar_revenue",
+    tenantId: "tenant_northstar_search",
+    title: "Northstar Search revenue board",
+    ownerId: "usr_702",
+    confidentialSummary: "Executive search revenue forecast and candidate source quality.",
+    forecast: "$1.8M quarterly pipeline",
+    riskNotes: ["Two founder searches at risk", "Comp bands pending client approval"]
+  },
+  {
+    reportId: "tenant_report_atlas_headcount",
+    tenantId: "tenant_atlas_grid",
+    title: "Atlas Grid headcount plan",
+    ownerId: "usr_703",
+    confidentialSummary: "Unannounced hiring plan for trust and platform teams.",
+    forecast: "18 roles over two quarters",
+    riskNotes: ["Legal review on VP People backfill", "Comp bands restricted to People Ops"]
+  }
+];
 
 export const profiles = [
   {
@@ -384,6 +459,22 @@ export const bolaEndpoints: BolaEndpoint[] = [
       id: company.companyId,
       ownerLabel: "companyAdminId",
       ownerValue: company.companyAdminId
+    }))
+  }
+];
+
+export const tenantIsolationEndpoints: TenantIsolationEndpoint[] = [
+  {
+    key: "tenant-report",
+    name: "Tenant Report",
+    method: "GET",
+    route: "/api/tenants/{tenantId}/reports/{reportId}",
+    scopePath: "tenantId",
+    records: tenantReports.map((report) => ({
+      label: report.title,
+      tenantId: report.tenantId,
+      objectId: report.reportId,
+      tenantLabel: tenants.find((tenant) => tenant.tenantId === report.tenantId)?.name ?? report.tenantId
     }))
   }
 ];

@@ -6,6 +6,11 @@ export async function resolveCallerId() {
   return user?.id ?? null;
 }
 
+export async function resolveCallerScopes() {
+  const user = await currentUser();
+  return user?.tenantIds ?? null;
+}
+
 async function callerRole() {
   const user = await currentUser();
   return user?.role ?? null;
