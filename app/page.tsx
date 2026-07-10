@@ -1,7 +1,7 @@
 import AuthPanel from "./network/auth-panel";
 import NetworkDesk from "./network/network-desk";
 import SignOutButton from "./network/sign-out-button";
-import { bflaEndpoints, bolaEndpoints, boplaEndpoints, posts, publicUser, tenantIsolationEndpoints, users } from "./lib/data";
+import { bflaEndpoints, bolaEndpoints, boplaEndpoints, missingAuthEndpoints, posts, publicUser, tenantIsolationEndpoints, users } from "./lib/data";
 import { currentUser } from "./lib/session";
 
 export default async function Home() {
@@ -54,6 +54,10 @@ export default async function Home() {
               <span className="mono">tenant route</span>
             </div>
             <div className="stat">
+              <strong>{missingAuthEndpoints.length}</strong>
+              <span className="mono">missing-auth route</span>
+            </div>
+            <div className="stat">
               <strong>{users.length}</strong>
               <span className="mono">seed identities</span>
             </div>
@@ -76,6 +80,7 @@ export default async function Home() {
               <span><strong>{bolaEndpoints.length}</strong> object reads</span>
               <span><strong>{tenantIsolationEndpoints.length}</strong> tenant read</span>
               <span><strong>{boplaEndpoints.length}</strong> property leak</span>
+              <span><strong>{missingAuthEndpoints.length}</strong> missing-auth read</span>
               <span><strong>{bflaEndpoints.length}</strong> privileged actions</span>
             </div>
           </div>
@@ -90,6 +95,7 @@ export default async function Home() {
           bolaEndpoints={bolaEndpoints}
           bflaEndpoints={bflaEndpoints}
           boplaEndpoints={boplaEndpoints}
+          missingAuthEndpoints={missingAuthEndpoints}
           tenantIsolationEndpoints={tenantIsolationEndpoints}
         />
       ) : null}

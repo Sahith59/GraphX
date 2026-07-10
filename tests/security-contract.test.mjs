@@ -48,13 +48,22 @@ const tenantIsolationRoutes = [
   ]
 ];
 
+const missingAuthRoutes = [
+  [
+    "app/api/diligence-briefings/[briefingId]/route.ts",
+    /Intentional missing authorization/,
+    /\/api\/diligence-briefings\/\[briefingId\]/
+  ]
+];
+
 test("documents the BOLA/IDOR and BFLA endpoint matrix", () => {
   assert.equal(bolaRoutes.length, 6);
   assert.equal(bflaRoutes.length, 5);
   assert.equal(bflaReadRoutes.length, 1);
   assert.equal(boplaRoutes.length, 2);
   assert.equal(tenantIsolationRoutes.length, 1);
-  for (const [, , pattern] of [...bolaRoutes, ...bflaRoutes, ...bflaReadRoutes, ...boplaRoutes, ...tenantIsolationRoutes]) {
+  assert.equal(missingAuthRoutes.length, 1);
+  for (const [, , pattern] of [...bolaRoutes, ...bflaRoutes, ...bflaReadRoutes, ...boplaRoutes, ...tenantIsolationRoutes, ...missingAuthRoutes]) {
     assert.match(readme, pattern);
   }
 });
@@ -99,6 +108,18 @@ test("tenant isolation routes provide caller scopes but intentionally skip scope
     assert.match(route, routeComment);
     assert.match(route, /tenantId/);
     assert.doesNotMatch(route, /auth\.user\.tenantIds\.includes/);
+  }
+});
+
+test("missing authorization routes declare auth but intentionally skip the auth gate", async () => {
+  for (const [path, routeComment] of missingAuthRoutes) {
+    const route = await readFile(new URL(path, root), "utf8");
+    assert.match(route, /export\s+const\s+GET\s*=\s*withBold/);
+    assert.match(route, /resolveCallerId/);
+    assert.match(route, /authRequired:\s*true/);
+    assert.match(route, routeComment);
+    assert.doesNotMatch(route, /requireUserResponse/);
+    assert.doesNotMatch(route, /currentUser/);
   }
 });
 
@@ -152,4 +173,6 @@ test("seed users cover candidate, recruiter, company admin, and admin roles", ()
   assert.match(data, /id:\s*"usr_703"/);
   assert.match(data, /tenant_atlas_grid/);
   assert.match(data, /tenant_northstar_search/);
+  assert.match(data, /dueDiligenceBriefings/);
+  assert.match(data, /briefing_atlas_board_940/);
 });

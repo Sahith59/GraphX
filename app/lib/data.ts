@@ -61,6 +61,15 @@ export type TenantIsolationEndpoint = {
   records: TenantRecord[];
 };
 
+export type MissingAuthEndpoint = {
+  key: string;
+  name: string;
+  method: "GET";
+  route: string;
+  expectedControl: string;
+  records: LabRecord[];
+};
+
 export const users: User[] = [
   {
     id: "usr_701",
@@ -171,6 +180,35 @@ export const tenantReports = [
     confidentialSummary: "Unannounced hiring plan for trust and platform teams.",
     forecast: "18 roles over two quarters",
     riskNotes: ["Legal review on VP People backfill", "Comp bands restricted to People Ops"]
+  }
+];
+
+export const dueDiligenceBriefings = [
+  {
+    briefingId: "briefing_atlas_board_940",
+    ownerId: "usr_703",
+    companyId: "company_atlas_grid",
+    title: "Atlas Grid board diligence packet",
+    accessLevel: "signed-in members only",
+    summary: "Confidential board memo covering unannounced headcount, runway, and candidate pipeline plans.",
+    restrictedFields: {
+      runway: "22 months",
+      legalRisk: "Pending employment counsel review",
+      hiringBudget: "$4.8M"
+    }
+  },
+  {
+    briefingId: "briefing_northstar_exec_941",
+    ownerId: "usr_702",
+    companyId: "company_northstar_search",
+    title: "Northstar executive search pipeline",
+    accessLevel: "signed-in members only",
+    summary: "Private client pipeline and replacement-search notes for retained executive searches.",
+    restrictedFields: {
+      runway: "N/A",
+      legalRisk: "Client confidentiality exposure",
+      hiringBudget: "$1.2M placement value"
+    }
   }
 ];
 
@@ -475,6 +513,22 @@ export const tenantIsolationEndpoints: TenantIsolationEndpoint[] = [
       tenantId: report.tenantId,
       objectId: report.reportId,
       tenantLabel: tenants.find((tenant) => tenant.tenantId === report.tenantId)?.name ?? report.tenantId
+    }))
+  }
+];
+
+export const missingAuthEndpoints: MissingAuthEndpoint[] = [
+  {
+    key: "diligence-briefing",
+    name: "Due Diligence Briefing",
+    method: "GET",
+    route: "/api/diligence-briefings/{briefingId}",
+    expectedControl: "signed-in session required",
+    records: dueDiligenceBriefings.map((briefing) => ({
+      label: briefing.title,
+      id: briefing.briefingId,
+      ownerLabel: "ownerId",
+      ownerValue: briefing.ownerId
     }))
   }
 ];

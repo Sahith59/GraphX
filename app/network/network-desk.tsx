@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { BflaEndpoint, BolaEndpoint, BoplaEndpoint, TenantIsolationEndpoint } from "../lib/data";
+import type { BflaEndpoint, BolaEndpoint, BoplaEndpoint, MissingAuthEndpoint, TenantIsolationEndpoint } from "../lib/data";
 
 type PublicUser = {
   id: string;
@@ -30,6 +30,7 @@ export default function NetworkDesk({
   bolaEndpoints,
   bflaEndpoints,
   boplaEndpoints,
+  missingAuthEndpoints,
   tenantIsolationEndpoints
 }: {
   currentUser: PublicUser;
@@ -38,18 +39,21 @@ export default function NetworkDesk({
   bolaEndpoints: BolaEndpoint[];
   bflaEndpoints: BflaEndpoint[];
   boplaEndpoints: BoplaEndpoint[];
+  missingAuthEndpoints: MissingAuthEndpoint[];
   tenantIsolationEndpoints: TenantIsolationEndpoint[];
 }) {
   const [bolaKey, setBolaKey] = useState(bolaEndpoints[0]?.key || "");
   const [bflaKey, setBflaKey] = useState(bflaEndpoints[0]?.key || "");
   const [boplaKey, setBoplaKey] = useState(boplaEndpoints[0]?.key || "");
+  const [missingAuthKey, setMissingAuthKey] = useState(missingAuthEndpoints[0]?.key || "");
   const [tenantKey, setTenantKey] = useState(tenantIsolationEndpoints[0]?.key || "");
-  const [result, setResult] = useState("Run a BOLA read, BOPLA read, or BFLA action to see the API response.");
+  const [result, setResult] = useState("Run a BOLA read, tenant read, missing-auth read, BOPLA read, or BFLA action to see the API response.");
   const [status, setStatus] = useState("Ready");
 
   const activeBola = bolaEndpoints.find((endpoint) => endpoint.key === bolaKey) || bolaEndpoints[0];
   const activeBfla = bflaEndpoints.find((endpoint) => endpoint.key === bflaKey) || bflaEndpoints[0];
   const activeBopla = boplaEndpoints.find((endpoint) => endpoint.key === boplaKey) || boplaEndpoints[0];
+  const activeMissingAuth = missingAuthEndpoints.find((endpoint) => endpoint.key === missingAuthKey) || missingAuthEndpoints[0];
   const activeTenant = tenantIsolationEndpoints.find((endpoint) => endpoint.key === tenantKey) || tenantIsolationEndpoints[0];
 
   async function callRoute(route: string, id: string, method: "GET" | "PATCH" | "POST") {
@@ -84,6 +88,15 @@ export default function NetworkDesk({
     const json = await response.json();
     setResult(JSON.stringify(json, null, 2));
     setStatus(`${response.status} ${response.statusText || "OK"} / GET ${url}`);
+  }
+
+  async function callMissingAuthRoute(route: string, id: string) {
+    const url = route.replace(/\{[^}]+\}/, encodeURIComponent(id));
+    setStatus(`GET ${url} without credentials`);
+    const response = await fetch(url, { credentials: "omit" });
+    const json = await response.json();
+    setResult(JSON.stringify(json, null, 2));
+    setStatus(`${response.status} ${response.statusText || "OK"} / anonymous GET ${url}`);
   }
 
   return (
@@ -191,6 +204,35 @@ export default function NetworkDesk({
                 <strong>{record.objectId}</strong>
                 <span>{record.label}</span>
                 <span className="record-meta">tenantId: {record.tenantId} / {record.tenantLabel}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <h4>Missing authorization reads</h4>
+        <label className="field">
+          <span>Auth-required endpoint</span>
+          <select value={missingAuthKey} onChange={(event) => setMissingAuthKey(event.target.value)}>
+            {missingAuthEndpoints.map((endpoint) => (
+              <option key={endpoint.key} value={endpoint.key}>{endpoint.name}</option>
+            ))}
+          </select>
+        </label>
+        <div className="lab-section">
+          <div className="method">
+            {activeMissingAuth?.method} {activeMissingAuth?.route} / expected: {activeMissingAuth?.expectedControl}
+          </div>
+          <div className="record-grid">
+            {activeMissingAuth?.records.map((record) => (
+              <button
+                className="record-button"
+                key={record.id}
+                onClick={() => void callMissingAuthRoute(activeMissingAuth.route, record.id)}
+                type="button"
+              >
+                <strong>{record.id}</strong>
+                <span>{record.label}</span>
+                <span className="record-meta">{record.ownerLabel}: {record.ownerValue}</span>
               </button>
             ))}
           </div>
