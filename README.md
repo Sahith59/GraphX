@@ -31,6 +31,7 @@ All accounts use password `demo1234`.
 ## Intentional missing authorization routes
 
 - `GET /api/diligence-briefings/[briefingId]` -> should require a signed-in session, but anonymous callers can read sensitive briefing data; the route is marked `authRequired: true` for BoLD
+- `POST /api/diligence-briefings` -> authenticated seed route used by BoLD active checks to create a throwaway briefing
 
 ## Intentional BOPLA routes
 

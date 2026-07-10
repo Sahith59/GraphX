@@ -56,6 +56,10 @@ const missingAuthRoutes = [
   ]
 ];
 
+const missingAuthSeedRoutes = [
+  "app/api/diligence-briefings/route.ts"
+];
+
 test("documents the BOLA/IDOR and BFLA endpoint matrix", () => {
   assert.equal(bolaRoutes.length, 6);
   assert.equal(bflaRoutes.length, 5);
@@ -118,8 +122,16 @@ test("missing authorization routes declare auth but intentionally skip the auth 
     assert.match(route, /resolveCallerId/);
     assert.match(route, /authRequired:\s*true/);
     assert.match(route, routeComment);
-    assert.doesNotMatch(route, /requireUserResponse/);
-    assert.doesNotMatch(route, /currentUser/);
+    const getHandler = route.slice(route.indexOf("async function _bold_GET"), route.indexOf("export const GET"));
+    assert.doesNotMatch(getHandler, /requireUserResponse/);
+    assert.doesNotMatch(getHandler, /currentUser/);
+  }
+  for (const path of missingAuthSeedRoutes) {
+    const route = await readFile(new URL(path, root), "utf8");
+    assert.match(route, /export\s+const\s+POST\s*=\s*withBold/);
+    assert.match(route, /requireUserResponse/);
+    assert.match(route, /authRequired:\s*true/);
+    assert.match(route, /briefing_bold_seed_/);
   }
 });
 
